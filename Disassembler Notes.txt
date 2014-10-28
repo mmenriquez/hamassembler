@@ -20,3 +20,11 @@ CHECK for " "
 
 ==================IF ELSE==================
 
+; code to set FLAGS
+    jxx else_block ; Select xx so that branches if condition false
+        ; code for the then-block
+    jmp endif
+else_block:
+    ; code for the else block
+endif:
+
