@@ -1,0 +1,22 @@
+==========PRINTING==========
+
+CHECK for " " 
+	if exists: rektang print ng laman ni " "
+	else: get value
+	
+	var : variableName = value
+	// var => number db '23$' //kailangan ng terminator na $
+	ang kelangan natin: value lang
+	
+	example 'to --------------------------------------------------
+	int number = 23;
+	
+	sysout("hi") => hi lang yung lalabas
+		while reading whole file, look for sysout("length>3"), save to an array of variables
+	sysout(number) => yung laman ni number; HINDI yung buong var
+	
+	--------------------------------------------------------------
+	
+
+==================IF ELSE==================
+
