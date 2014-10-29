@@ -17,6 +17,15 @@ CHECK for " "
 	
 	--------------------------------------------------------------
 	
+	example 'to --------------------------------------------------
+	int number = 23;
+	
+	sysout("hi") => hi lang yung lalabas
+		while reading whole file, look for sysout("length>3"), save to an array of variables
+	sysout(number) => yung laman ni number; HINDI yung buong var
+	
+	--------------------------------------------------------------
+	
 	
 	
 
