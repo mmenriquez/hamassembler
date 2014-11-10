@@ -16,8 +16,7 @@ public class main {
 		System.out.println("Marquee");
 		int number = 8;
 		System.out.println(histr);
-		System.out.println(number);
-		if (number < 8)
+		if (number = 8)
 	}
 
 }

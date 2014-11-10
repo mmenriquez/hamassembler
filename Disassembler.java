@@ -1,3 +1,5 @@
+//package mp;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,6 +56,11 @@ public class Disassembler {
 		else 
 			variable = changeVar(variable);
 
+		String var = variable.replace("=", "db");
+		outputStream.println("	" + var);
+	}
+	
+	static void specialvariableConverter(PrintWriter outputStream, String variable) {
 		String var = variable.replace("=", "db");
 		outputStream.println("	" + var);
 	}
@@ -151,7 +158,7 @@ public class Disassembler {
 				}
 			}inputStream.close();
 			
-			if(errClass == 0 && errMain == 0){ //proper class and main function
+			if(errClass == 0 && errMain == 0) { //proper class and main function
 				line = "";
 				inputStream = new BufferedReader(new FileReader(file_name));
 				outputStream = new PrintWriter(new FileOutputStream(asmFileName));
@@ -165,7 +172,7 @@ public class Disassembler {
 						int startOfVariable = line.indexOf('i') + 4;
 						int endOfVariable = line.indexOf(';');
 						variable = line.substring(startOfVariable, endOfVariable);
-						variableConverter(outputStream, variable);
+						specialvariableConverter(outputStream, variable);
 					}
 					if(line.contains("char ")) {
 						int startOfVariable = line.indexOf('c') + 5;
@@ -207,7 +214,9 @@ public class Disassembler {
 				outputStream.println("mov ax, @data");
 				outputStream.println("mov ds, ax");
 				outputStream.println("");
-
+				
+				
+				//MAUNA DAPAT NA HANAPIN ANG IF ELSE THEN PUT A COUNTER
 				//PRINTING OF OUTPUTS
 				inputStream = new BufferedReader(new FileReader(file_name));
 				
@@ -223,15 +232,26 @@ public class Disassembler {
 				inputStream.close();
 				
 				//IF ELSE
+				String ifblk = "";
+				String ifstmt = "";
 				inputStream = new BufferedReader(new FileReader(file_name));
-				while((line=inputStream.readLine()) != null){
-					if(line.contains("if")) {
-						int start = line.indexOf('(');
-						int end = line.indexOf(')');
-						String condition = line.substring(start+1, end);
+				while((line=inputStream.readLine()) != null) {
+					ifstmt = ifstmt + "\n" + line;
+				}
+				StringTokenizer st = new StringTokenizer(ifstmt, "\n");
+				int i = 0;
+				int numOfTokens = st.countTokens();
+				String[] token = new String[numOfTokens];
+				while(st.hasMoreTokens()) {
+					token[i] = st.nextToken();
+					if(token[i].contains("if")) {
+						int start = token[i].indexOf('(');
+						int end = token[i].indexOf(')');
+						String condition = token[i].substring(start+1, end);
 						doIf(outputStream, condition);
 						print(outputStream, "0ah");
 					}
+					i++;
 				}
 				
 				inputStream.close();
