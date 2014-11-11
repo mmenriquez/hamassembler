@@ -1,5 +1,3 @@
-//package mp;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -23,8 +21,8 @@ public class Disassembler {
 			for(int i = 1;i < printStr.length()-1;i++) {
 				printChar(outputStream, printStr.charAt(i));
 			}
-			//outputStream.println("");
-			//print(outputStream, "0ah");
+			outputStream.println("");
+			print(outputStream, "0ah");
 		}else{ //pag ang printStr ay variable, e.g. number, var
 			for(int i = 0; i < numbers.length; i++){//catch if value of the variable is a number
 				if(numbers[i].equals(printStr)){
@@ -99,16 +97,13 @@ public class Disassembler {
 		return variable.substring(start, end);
 	}
 	
-	static void whileConverter(PrintWriter outputStream, String loopVariable, String boolExp, int constant, ArrayList sysVar){
+	static void whileConverter(PrintWriter outputStream, String loopVariable, String boolExp, int constant, String sysVar){
 		String booleanExp = "";
 		outputStream.println("whilelabel:");
 		if(boolExp == "<"){
 			outputStream.println("cmp " + loopVariable + ", " + constant);
 			outputStream.println("jge endwhile");
-			for(int i = 0;i < sysVar.size();i++) {
-				sysoutConverter(outputStream, sysVar.get(i).toString());
-				print(outputStream, "0ah");
-			}
+			sysoutConverter(outputStream, sysVar);
 			outputStream.println("inc " + loopVariable); //assumed
 			outputStream.println("jmp whilelabel");
 			outputStream.println("endwhile:");
@@ -116,20 +111,14 @@ public class Disassembler {
 			constant++;
 			outputStream.println("cmp " + loopVariable + ", " + constant);
 			outputStream.println("jge endwhile");
-			for(int i = 0;i < sysVar.size();i++) {
-				sysoutConverter(outputStream, sysVar.get(i).toString());
-				print(outputStream, "0ah");
-			}
+			sysoutConverter(outputStream, sysVar);
 			outputStream.println("inc " + loopVariable); //assumed
 			outputStream.println("jmp whilelabel");
 			outputStream.println("endwhile:");
 		}else if(boolExp == ">"){
 			outputStream.println("cmp " + loopVariable + ", " + constant);
 			outputStream.println("jle endwhile");
-			for(int i = 0;i < sysVar.size();i++) {
-				sysoutConverter(outputStream, sysVar.get(i).toString());
-				print(outputStream, "0ah");
-			}
+			sysoutConverter(outputStream, sysVar);
 			outputStream.println("dec " + loopVariable); //assumed
 			outputStream.println("jmp whilelabel");
 			outputStream.println("endwhile:");
@@ -137,10 +126,7 @@ public class Disassembler {
 			constant--;
 			outputStream.println("cmp " + loopVariable + ", " + constant);
 			outputStream.println("jle endwhile");
-			for(int i = 0;i < sysVar.size();i++) {
-				sysoutConverter(outputStream, sysVar.get(i).toString());
-				print(outputStream, "0ah");
-			}
+			sysoutConverter(outputStream, sysVar);
 			outputStream.println("dec " + loopVariable); //assumed
 			outputStream.println("jmp whilelabel");
 			outputStream.println("endwhile:");
@@ -151,31 +137,28 @@ public class Disassembler {
 		String booleanExp = "";
 		outputStream.println("dowhilelabel:");
 		if(boolExp == "<"){
-			print(outputStream, "0ah");
 			sysoutConverter(outputStream, sysVar);
 			outputStream.println("	inc " + variable); //assumed
 			outputStream.println("	cmp " + variable + ", " + constant);
 			outputStream.println("	jl dowhilelabel");
 		}else if(boolExp == "<="){
-			print(outputStream, "0ah");
 			sysoutConverter(outputStream, sysVar);
 			outputStream.println("	inc " + variable); //assumed
 			outputStream.println("	cmp " + variable + ", " + constant);
 			outputStream.println("	jle dowhilelabel");
 		}else if(boolExp == ">"){
-			print(outputStream, "0ah");
 			sysoutConverter(outputStream, sysVar);
 			outputStream.println("	dec " + variable); //assumed
 			outputStream.println("	cmp " + variable + ", " + constant);
 			outputStream.println("	jg endwhile");
 		}else if(boolExp == ">="){
-			print(outputStream, "0ah");
 			sysoutConverter(outputStream, sysVar);
 			outputStream.println("	dec " + variable); //assumed
 			outputStream.println("	cmp " + variable + ", " + constant);
 			outputStream.println("	jge endwhile");
 		}
 	}
+	
 	static String getComparator(String condition) {
 		StringTokenizer st = new StringTokenizer(condition, " ");
 		String temp = "";
@@ -205,13 +188,13 @@ public class Disassembler {
 		String temp = "";
 		if(comparator.equals("="))
 			temp = "je";
-		else if(comparator.equals(">")) 
+		else if(comparator.equals(">"))
 			temp = "jg";
-		else if(comparator.equals("<")) 
+		else if(comparator.equals("<"))
 			temp = "jl";
-		else if(comparator.equals("<=")) 
+		else if(comparator.equals("<="))
 			temp = "jle";
-		else if(comparator.equals(">=")) 
+		else if(comparator.equals(">="))
 			temp = "jge";
 		else if(comparator.equals("!="))
 			temp = "jne";
@@ -219,6 +202,7 @@ public class Disassembler {
 		outputStream.println(temp + " if_block");
 		outputStream.println("if_block:");
 	}
+	
 	public static void main(String[] args) throws IOException {
 		BufferedReader inputStream = null;
 		PrintWriter outputStream = null;
@@ -227,7 +211,6 @@ public class Disassembler {
 		int errClass = 1;
 		int errMain = 1;
 		int sysMode = 1;
-		int ieMode = 1;
 		
 		Scanner scanner = new Scanner(System.in);
 		System.out.println("File to open: ");
@@ -324,7 +307,8 @@ public class Disassembler {
 				outputStream.println("mov ax, @data");
 				outputStream.println("mov ds, ax");
 				outputStream.println("");
-				
+
+				//PRINTING OF OUTPUTS
 				inputStream = new BufferedReader(new FileReader(file_name));
 				
 				while((line=inputStream.readLine()) != null){
@@ -338,7 +322,6 @@ public class Disassembler {
 					}
 					//INSERT IF HERE
 					else if(line.contains("if")) {
-						ieMode = 0;
 						String sysVar = "";
 						sysMode = 0;
 						int start = line.indexOf('(');
@@ -351,13 +334,13 @@ public class Disassembler {
 						String temp = "";
 						if(comparator.equals("="))
 							temp = "je";
-						else if(comparator.equals(">")) 
+						else if(comparator.equals(">"))
 							temp = "jg";
-						else if(comparator.equals("<")) 
+						else if(comparator.equals("<"))
 							temp = "jl";
-						else if(comparator.equals("<=")) 
+						else if(comparator.equals("<="))
 							temp = "jle";
-						else if(comparator.equals(">=")) 
+						else if(comparator.equals(">="))
 							temp = "jge";
 						else if(comparator.equals("!="))
 							temp = "jne";
@@ -371,34 +354,19 @@ public class Disassembler {
 								sysoutConverter(outputStream, sysVar);
 								print(outputStream, "0ah");
 							}
-							if(line.contains("}"))
-								break;
 						}
-						outputStream.println("jmp exit");
-	
-					}
-					else if(line.contains("else") && ieMode == 0) {
-						String sysVar = "";
-						sysMode = 0;
 						outputStream.println("else_block:");
-						while((line=inputStream.readLine())!=null){
-							if(line.contains("System.out.println")){
-								sysVar = line.substring(line.indexOf('(')+1, line.indexOf(')'));
-								sysoutConverter(outputStream, sysVar);
-								print(outputStream, "0ah");
-							}
-						}
+
 					}
-					
 					//WHILE
-					else if(line.contains("while")&&!doLoop){
+					if(line.contains("while")&&!doLoop){
 						sysMode = 0;
 						int startOfLoopVar = 0;
 						int endOfVarLoop = 0;
 						int constant = 0;
 						String loopVariable = "";
 						String boolExp = "";
-						ArrayList<String> sysVar = new ArrayList<String>();
+						String sysVar = "";
 						
 						startOfLoopVar = line.indexOf('(')+1;
 						if(line.contains("<")){
@@ -422,21 +390,19 @@ public class Disassembler {
 						
 						while((line=inputStream.readLine())!=null){
 							if(line.contains("System.out.println")){
-								sysVar.add(line.substring(line.indexOf('(')+1, line.indexOf(')')));
+								sysVar = line.substring(line.indexOf('(')+1, line.indexOf(')'));
 							}
 						}
 	
 						whileConverter(outputStream, loopVariable, boolExp, constant, sysVar);
-					}
-					//FOR
-					else if(line.contains("for")){
+					}else if(line.contains("for")){
 						sysMode = 0;
 						int startOfLoopVar = 0;
 						int endOfLoopVar = 0;
 						int constant = 0;
 						String loopVariable = "";
 						String boolExp = "";
-						ArrayList<String> sysVar = new ArrayList<String>();
+						String sysVar = "";
 						
 						startOfLoopVar = line.indexOf('(')+1;
 						endOfLoopVar = line.indexOf('=')-1;
@@ -464,14 +430,12 @@ public class Disassembler {
 						
 						while((line=inputStream.readLine())!=null){
 							if(line.contains("System.out.println")){
-								sysVar.add(line.substring(line.indexOf('(')+1, line.indexOf(')')));
+								sysVar = line.substring(line.indexOf('(')+1, line.indexOf(')'));
 							}
 						}
 	
 						whileConverter(outputStream, loopVariable, boolExp, constant, sysVar);
-					}
-					//DO-WHILE
-					else if(line.contains("do")){
+					}else if(line.contains("do")){
 						doLoop = true;
 						sysMode = 0;
 						
@@ -482,16 +446,16 @@ public class Disassembler {
 						String boolExp = "";
 						String sysVar = "";
 						
+						
 						while((line=inputStream.readLine())!=null){
 							if(line.contains("System.out.println")){
 								sysVar = line.substring(line.indexOf('(')+1, line.indexOf(')'));
-								//break;
+								break;
 							}
 						}
 						while((line=inputStream.readLine())!=null){
 							if(line.contains("while")&&doLoop){
-								startOfLoopVar = line.charAt(line.indexOf('(')+1);
-
+								startOfLoopVar = line.indexOf('(')+1;
 								if(line.contains("<")){
 									endOfLoopVar = line.indexOf('<')-1;
 									if(line.charAt(line.indexOf("<")+1) == '='){
@@ -510,7 +474,6 @@ public class Disassembler {
 								loopVariable = line.substring(startOfLoopVar, endOfLoopVar);
 								constant = line.charAt(line.indexOf(')')-1);
 								constant -= 48;
-
 							}
 						}
 						
@@ -519,7 +482,6 @@ public class Disassembler {
 				}
 				inputStream.close();
 				//END OF OUTPUTS
-				outputStream.println("exit:");
 				outputStream.println("mov ax, 4c00h");
 				outputStream.println("int 21h");
 				outputStream.println("");
