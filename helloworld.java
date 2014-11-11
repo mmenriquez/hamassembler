@@ -5,18 +5,22 @@ public class main {
 	 * @param args
 	 */
 
+	int i = 0;
+	double doub = 3;
+	float floa = 4;
+	char character = 'a';
+	String myname = "aky";
+
+
 	public static void main(String[] args) {
-		double var = 10.00;
-		System.out.println(var);
-		System.out.println("Harold James");
-		System.out.println("a");
-		String histr = "hi";
-		System.out.println("Harold James");
-		System.out.println("Aky");
-		System.out.println("Marquee");
-		int number = 8;
-		System.out.println(histr);
-		if (number = 8)
+		System.out.println(i);
+		System.out.println(doub);
+		System.out.println(floa);
+		System.out.println(character);
+		System.out.println(myname);
+		System.out.println('a');
+		System.out.println('5');
+		System.out.println("akyladisla");
 	}
 
 }
