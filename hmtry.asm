@@ -1,5 +1,6 @@
 .model small
 .data
+	TEMP DB ?,'$'
 
 	PROMPT1 DB 0DH,0AH,'Are you ready to play? (y for YES, n for NO):', '$'
 	PROMPT2 DB 0DH,0AH,'Please try again ', '$'
@@ -11,41 +12,31 @@
 	PROMPT8 DB 0DH,0AH,'List of chosen letter(s): ', '$'
 	CRLF   DB  0DH, 0AH, '$'
 
-	FIG0    DB 0DH,0AH,' +=======+',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG1    DB 0DH,0AH,' +=======+',0DH,0AH,' |       |',0DH,0AH,' O       |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG2    DB 0DH,0AH,' +=======+',0DH,0AH,' |       |',0DH,0AH,' O       |',0DH,0AH,'/        |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG3    DB 0DH,0AH,' +=======+',0DH,0AH,' |       |',0DH,0AH,' O       |',0DH,0AH,'/ \      |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG4    DB 0DH,0AH,' +=======+',0DH,0AH,' |       |',0DH,0AH,' O       |',0DH,0AH,'/|\      |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG5    DB 0DH,0AH,' +=======+',0DH,0AH,' |       |',0DH,0AH,' O       |',0DH,0AH,'/|\      |',0DH,0AH,' |       |',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG6    DB 0DH,0AH,' +=======+',0DH,0AH,' |       |',0DH,0AH,' O       |',0DH,0AH,'/|\      |',0DH,0AH,' |       |',0DH,0AH,'/        |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG7    DB 0DH,0AH,' +=======+',0DH,0AH,' |       |',0DH,0AH,' O       |',0DH,0AH,'/|\      |',0DH,0AH,' |       |',0DH,0AH,'/ \      |',0DH,0AH,'         |',0DH,0AH,' ========+',0DH,0AH,'$'
-	FIG8    DB 0DH,0AH,' +=======+',0DH,0AH,'         |',0DH,0AH,'         |',0DH,0AH,'   \O/   |',0DH,0AH,'    |    |',0DH,0AH,'    |    |',0DH,0AH,'   / \   |',0DH,0AH,' ========+',0DH,0AH,'$'
-
 	STACK_INPUT DB ?,'$'
-	TEMP DB ?,'$'
-	MSG  DB ?,'$'
 
 	LINE1 DB 'H A M A S S E M B L E R  |  H A N G M A N','$'
 	LINE2 DB 'GET STARTED','$'
 	PROMPT DB 'Please Enter The Message Number (0-9)','$'
 	ERRORMSG DB 'DIGIT nga eh, enter ka ulit!','$' 
-	MSG0 DB  'temperature$'
+	INPUT_MSG DB ' Enter your input :	$'
+	DUP_MSG DB ' You already entered$'
+	MSG0 DB  'temperature','$'
 	MSG1 DB  'akyladisla','$'
-	MSG2 DB  'paradise$'
-	MSG3 DB  'memorial$'
-	MSG4 DB  'wonderful$'
-	MSG5 DB  'substance$'
-	MSG6 DB  'animation$'
-	MSG7 DB  'boutique$'
-	MSG8 DB  'dangerous$'
-	MSG9 DB  'element$'
+	MSG2 DB  'paradise','$'
+	MSG3 DB  'memorial','$'
+	MSG4 DB  'wonderful','$'
+	MSG5 DB  'substance','$'
+	MSG6 DB  'animation','$'
+	MSG7 DB  'boutique','$'
+	MSG8 DB  'dangerous','$'
+	MSG9 DB  'element','$'
 
 	CREDIT    DB ?
 	correct   DB ?
 	incorrect DB ?
 	STR_L	  DB ?
 	
-	rowBorderCorner db 4	
+	rowBorderCorner db 4
 	colBorderCorner db 7
 	rowBorder db 4
 	colBorder db 8
@@ -53,11 +44,27 @@
 	yCoor db 12
 	
 	delayTime db 10
-	number db '3'
+	number db '2'
 	
 	yinput db 12
 	xinput db 33
 	msgcontainer db ?,'$'
+	
+	level db 1
+	score db 15
+	win_msg db 'Congratulations!','$'
+	lose_msg db 'You lose. Try Again!','$'
+	level1_msg db 'Level One Cleared!','$'
+	level2_msg db 'Level Two Cleared!','$'
+	level3_msg db 'Level Three Cleared!','$'
+	play_again db '[1] Stay On Game [0] End Game','$'
+	winner db 0
+	loser db 0
+	lives db 7
+	play db ?
+	
+	
+	MSG  DB ?,'$'
 	
 .stack 100h
 .code
@@ -123,67 +130,6 @@
 	ret
 	
 	countdown endp
-	
-	print_border2 proc
-	
-	mov rowBorder, 4
-	mov colBorder, 30
-	
-	mov dh, rowBorder
-	mov dl, colBorder
-	xor bh, bh 
-    mov ah, 02h 
-    int 10h
-	
-	mov al, 203
-	xor bh, bh
-	mov bh, 0
-	mov bl, 0Bh
-	xor cx, cx
-	mov cx, 1
-	mov ah, 09h
-	int 10h
-	
-	loop_printborder2:
-	inc rowBorder
-	mov dh, rowBorder
-	mov dl, colBorder
-	xor bh, bh 
-    mov ah, 02h 
-    int 10h
-	
-	mov al, 186
-	xor bh, bh
-	mov bh, 0
-	mov bl, 0Bh
-	xor cx, cx
-	mov cx, 1
-	mov ah, 09h
-	int 10h
-
-	cmp rowBorder, 19
-	jle loop_printborder2
-	
-	inc rowBorder
-	
-	mov dh, rowBorder
-	mov dl, colBorder
-	xor bh, bh 
-    mov ah, 02h 
-    int 10h
-	
-	mov al, 202
-	xor bh, bh
-	mov bh, 0
-	mov bl, 0Bh
-	xor cx, cx
-	mov cx, 1
-	mov ah, 09h
-	int 10h
-	
-	ret
-	
-	print_border2 endp
 	
 	print_border proc
 	
@@ -346,6 +292,67 @@
 	
 	print_border endp
 	
+	print_border2 proc
+	
+	mov rowBorder, 4
+	mov colBorder, 30
+	
+	mov dh, rowBorder
+	mov dl, colBorder
+	xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, 203
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Bh
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	loop_printborder2:
+	inc rowBorder
+	mov dh, rowBorder
+	mov dl, colBorder
+	xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, 186
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Bh
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+
+	cmp rowBorder, 19
+	jle loop_printborder2
+	
+	inc rowBorder
+	
+	mov dh, rowBorder
+	mov dl, colBorder
+	xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, 202
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Bh
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	print_border2 endp
+	
 	print_openingmsg proc
 	
 	xor si, si
@@ -408,50 +415,9 @@
 	
 	print_openingmsg endp
 	
-	message0 proc
-	
-	xor si, si
-	
-	copy0:
-	cmp msg0[si],'$'
-	je end0
-	mov al, msg0[si]
-	mov msg[si], al
-	inc si
-	loop copy0
-	
-	end0:
-	mov msg[si],'$'
-	call display_empty
-	
-	ret
-	
-	message0 endp
-	
-	message1 proc
-	
-	xor si, si
-	xor ax, ax
-	
-	REC1:
-	CMP MSG1[si],'$'
-	JE END1
-	MOV DL,MSG1[si]
-	MOV MSG[si],DL
-	INC si
-	JMP REC1
-	END1:
-	MOV MSG[si],'$'
-	
-	call clrscrn
-	call print_border
-	call print_border2
-	
-	call display_empty
-	
-	ret
-	
-	message1 endp
+	;----------------------------------------------------;
+	;	WORD TABLE
+	;----------------------------------------------------;
 	
 	word_table proc
     
@@ -469,62 +435,249 @@
 	next_msg2:
 	cmp al, '2'
 	jne next_msg3
-	;call message2
+	call message2
 	jmp end_wtable
 	
 	next_msg3:
 	cmp al, '3'
-	;call message3
+	jne next_msg4
+	call message3
 	jmp end_wtable
 	
+	next_msg4:
 	cmp al, '4'
-	;call message4
+	jne next_msg5
+	call message4
 	jmp end_wtable
 	
+	next_msg5:
 	cmp al, '5'
-	;call message5
+	jne next_msg6
+	call message5
 	jmp end_wtable
 	
+	next_msg6:
 	cmp al, '6'
-	;call message6
+	jne next_msg7
+	call message6
 	jmp end_wtable
 	
+	next_msg7:
 	cmp al, '7'
-	;call message7
+	jne next_msg8
+	call message7
 	jmp end_wtable
 	
+	next_msg8:
 	cmp al, '8'
-	;call message8
+	jne next_msg9
+	call message8
 	jmp end_wtable
 	
+	next_msg9:
 	cmp al, '9'
-	;call message9
+	call message9
 	
 	end_wtable:
 	ret
 	
 	word_table endp
 	
-	display_empty proc
-	call clrscrn
-	call print_border
-	call print_border2
+	message0 proc
 	
-	mov str_l, 0
-	mov bl, '-'
-	mov ah, 09h
 	xor si, si
 	
-	begin:
-	cmp msg[si], '$'
-	je end_
-	mov temp[si],bl
-	inc str_l
+	rec0:
+	cmp msg0[si],'$'
+	je end0
+	mov dl, msg0[si]
+	mov msg[si], dl
 	inc si
-	jmp begin
+	jmp rec0
 	
-	end_:
-	mov temp[si], '$'
+	end0:
+	mov msg[si],'$'
+
+	ret
+	
+	message0 endp
+	
+	message1 proc
+	
+	xor si, si
+	
+	rec1:
+	cmp msg1[si],'$'
+	je end1
+	mov dl, msg1[si]
+	mov msg[si], dl
+	inc si
+	jmp rec1
+	
+	end1:
+	mov msg[si],'$'
+
+	ret
+	
+	message1 endp
+	
+	message2 proc
+	
+	xor si, si
+	
+	rec2:
+	cmp msg2[si],'$'
+	je end2
+	mov dl, msg2[si]
+	mov msg[si], dl
+	inc si
+	jmp rec2
+	
+	end2:
+	mov msg[si],'$'
+
+	ret
+	
+	message2 endp
+	
+	message3 proc
+	
+	xor si, si
+	
+	rec3:
+	cmp msg3[si],'$'
+	je end3
+	mov dl, msg3[si]
+	mov msg[si], dl
+	inc si
+	jmp rec3
+	
+	end3:
+	mov msg[si],'$'
+
+	ret
+	
+	message3 endp
+	
+	message4 proc
+	
+	xor si, si
+	
+	rec4:
+	cmp msg4[si],'$'
+	je end4
+	mov dl, msg4[si]
+	mov msg[si], dl
+	inc si
+	jmp rec4
+	
+	end4:
+	mov msg[si],'$'
+
+	ret
+	
+	message4 endp
+	
+	message5 proc
+	
+	xor si, si
+	
+	rec5:
+	cmp msg5[si],'$'
+	je end5
+	mov dl, msg5[si]
+	mov msg[si], dl
+	inc si
+	jmp rec5
+	
+	end5:
+	mov msg[si],'$'
+
+	ret
+	
+	message5 endp
+	
+	message6 proc
+	
+	xor si, si
+	
+	rec6:
+	cmp msg6[si],'$'
+	je end6
+	mov dl, msg6[si]
+	mov msg[si], dl
+	inc si
+	jmp rec6
+	
+	end6:
+	mov msg[si],'$'
+
+	ret
+	
+	message6 endp
+	
+	message7 proc
+	
+	xor si, si
+	
+	rec7:
+	cmp msg7[si],'$'
+	je end7
+	mov dl, msg7[si]
+	mov msg[si], dl
+	inc si
+	jmp rec7
+	
+	end7:
+	mov msg[si],'$'
+
+	ret
+	
+	message7 endp
+	
+	message8 proc
+	
+	xor si, si
+	
+	rec8:
+	cmp msg8[si],'$'
+	je end8
+	mov dl, msg8[si]
+	mov msg[si], dl
+	inc si
+	jmp rec8
+	
+	end8:
+	mov msg[si],'$'
+
+	ret
+	
+	message8 endp
+	
+	message9 proc
+	
+	xor si, si
+	
+	rec9:
+	cmp msg9[si],'$'
+	je end9
+	mov dl, msg9[si]
+	mov msg[si], dl
+	inc si
+	jmp rec9
+	
+	end9:
+	mov msg[si],'$'
+
+	ret
+	
+	message9 endp
+	
+	;---------------------------------------------------;
+	;	DISPLAY BLANKS
+	;---------------------------------------------------;
+	
+	display_temp proc
 	
 	xor si, si
 	mov yinput, 12
@@ -566,7 +719,513 @@
 	end_displayempty:
 	ret
 	
-	display_empty endp
+	display_temp endp
+	
+	init_temp proc
+	
+	mov str_l, 0
+	mov bl, '_'
+	mov ah, 09h
+	xor si, si
+	
+	begin:
+	cmp msg[si], '$'
+	je end_
+	mov temp[si],bl
+	inc str_l
+	inc si
+	jmp begin
+	
+	end_:
+	mov temp[si], '$'
+	
+	lea dx, temp
+	mov ah, 09h
+	int 21h
+	
+	ret
+	
+	init_temp endp
+	
+	reset_stackinput proc
+	xor si, si
+	
+	loop_reset:
+	cmp stack_input[si], '$'
+	je return_reset
+	mov stack_input[si], '$'
+	inc si
+	jmp loop_reset
+	
+	return_reset:
+	ret
+	
+	reset_stackinput endp
+	
+	reset_stats proc
+	
+	mov correct, 0
+	mov incorrect, 0
+	mov lives, 7
+	mov credit, 0
+	mov winner, 0
+	call reset_stackinput
+	
+	ret
+	
+	reset_stats endp
+	
+	;-----------------------------------------------------;
+	;	USER INPUT
+	;-----------------------------------------------------;
+	
+	user_input proc
+	
+	get_input:
+	mov dh, 14
+	mov dl, 33
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov dx, offset input_msg
+	mov ah, 09h
+	int 21h
+	
+	mov ah, 01h
+	int 21h
+	mov bl, al
+	xor si, si
+	
+	
+	check_dup:
+	cmp stack_input[si],'$'
+	je store_input
+	cmp al, stack_input[si]
+	je duplicate
+	inc si
+	jmp check_dup
+	
+	duplicate:
+	mov dh, 14
+	mov dl, 33
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov dx, offset dup_msg
+	mov ah, 09h
+	int 21h
+	call delay
+	jmp get_input
+	
+	STORE_INPUT:
+	MOV STACK_INPUT[SI],BL
+	INC SI
+	MOV STACK_INPUT[SI],'$'
+	
+	ret 
+	
+	user_input endp
+	
+	;--------------------------------------------------;
+	;	CHECK INPUT
+	;--------------------------------------------------;
+	
+	check_input proc
+	xor si,si
+	
+	loop_check:
+	cmp msg[si],'$'
+	je check_credit
+	cmp bl, msg[si]
+	jne not_matched
+	mov temp[si], bl
+	inc correct
+	inc credit
+	not_matched:
+	inc si
+	jmp loop_check
+	
+	check_credit:
+	cmp credit, 0
+	jne check_return
+	inc incorrect
+	dec lives
+	
+	check_return:
+	mov credit, 0
+	
+	ret
+	
+	check_input endp
+	
+	;-----------------------------------------------------------------;
+	;  ERROR DISPLAY
+	;-----------------------------------------------------------------;
+	
+	display_error proc
+	
+	cmp incorrect, 0
+	jne next_error
+	call incorrect0
+	jmp return_displayerror
+	
+	next_error:
+	cmp incorrect, 1
+	jne next_error2
+	call incorrect1
+	jmp return_displayerror
+	
+	next_error2:
+	cmp incorrect, 2
+	jne next_error3
+	call incorrect2
+	jmp return_displayerror
+	
+	next_error3:
+	cmp incorrect, 3
+	jne next_error4
+	call incorrect3
+	jmp return_displayerror
+	
+	next_error4:
+	cmp incorrect, 4
+	jne next_error5
+	call incorrect4
+	jmp return_displayerror
+	
+	next_error5:
+	cmp incorrect,5 
+	jne next_error6
+	call incorrect5
+	jmp return_displayerror
+	
+	next_error6:
+	cmp incorrect, 6
+	jne next_error7
+	call incorrect6
+	jmp return_displayerror
+	
+	next_error7:
+	cmp incorrect, 7
+	call incorrect7
+	
+	return_displayerror:
+	ret
+	
+	display_error endp
+	
+	incorrect0 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '0' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect0 endp
+	
+	incorrect1 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '1' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect1 endp
+	
+	incorrect2 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '2' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect2 endp
+	
+	incorrect3 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '3' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect3 endp
+	
+	incorrect4 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '4' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect4 endp
+	
+	incorrect5 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '5' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect5 endp
+	
+	incorrect6 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '6' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect6 endp
+	
+	incorrect7 proc
+	
+	mov dh, 12
+	mov dl, 20
+    xor bh, bh 
+    mov ah, 02h 
+    int 10h
+	
+	mov al, '7' 
+	xor bh, bh
+	mov bh, 0
+	mov bl, 0Ah
+	xor cx, cx
+	mov cx, 1
+	mov ah, 09h
+	int 10h
+	
+	ret
+	
+	incorrect7 endp
+	
+	;-----------------------------------------------;
+	;	GAME STATUS
+	;-----------------------------------------------;
+	
+	game_status proc
+	
+	mov al, correct
+	cmp al, str_l
+	jne if_gameover
+	mov winner, 1
+	jmp gamestat_return
+	
+	if_gameover:
+	cmp lives,0
+	jne gamestat_return
+	mov loser, 1
+	
+	gamestat_return:
+	call display_error
+	
+	ret
+	
+	game_status endp
+	
+	win_status proc
+	
+	call clrscrn
+	call print_border
+	call print_border2
+	call display_error
+	
+	mov dh, 12
+    mov dl, 33
+    xor bh, bh 
+    mov ah, 02h
+    int 10h
+
+    mov dx, offset temp
+    mov ah, 09h
+    int 21h
+	
+	mov dh, 14
+    mov dl, 33
+    xor bh, bh 
+    mov ah, 02h
+    int 10h 
+	
+	mov dx, offset win_msg
+    mov ah, 09h
+    int 21h
+	
+	cmp level, 1
+	jne next_level
+	
+	mov dx, offset level1_msg
+    mov ah, 09h
+    int 21h
+	jmp next_winstat
+	
+	next_level:
+	cmp level, 2
+	jne next_level2
+	
+	mov dx, offset level2_msg
+    mov ah, 09h
+    int 21h
+	jmp next_winstat
+	
+	next_level2:
+	mov dx, offset level3_msg
+    mov ah, 09h
+    int 21h
+	ret
+	
+	next_winstat:
+	inc level
+	
+	mov dh, 15
+    mov dl, 33
+    xor bh, bh 
+    mov ah, 02h
+    int 10h 
+	
+	mov dx, offset play_again
+	mov ah, 09h
+	int 21h
+	
+	mov ah, 01h
+	int 21h
+	mov play, al
+	
+	ret
+	win_status endp
+	
+	game_over proc
+	
+	call clrscrn
+	call print_border
+	call display_error
+	
+	mov dh, 12
+    mov dl, 33
+    xor bh, bh 
+    mov ah, 02h
+    int 10h
+
+    mov dx, offset temp
+    mov ah, 09h
+    int 21h
+	
+	mov dh, 14
+    mov dl, 33
+    xor bh, bh 
+    mov ah, 02h
+    int 10h 
+	
+	mov dx, offset lose_msg
+    mov ah, 09h
+    int 21h
+	
+	ret
+	
+	game_over endp
+	
+	high_score proc
+	
+	mov dh, 12
+    mov dl, 40
+    xor bh, bh 
+    mov ah, 02h
+    int 10h
+	
+	mov dl, '#'
+	mov ah, 02h
+	int 21h
+	
+	mov ax, 4c00h
+	int 21h
+	
+	ret
+	
+	high_score endp
 
 	main proc
 	
@@ -579,14 +1238,15 @@
 	call delay
 	call countdown
 	
-	start_of_game:
+	start:
+	call reset_stats
 	
 	call clrscrn
 	call print_border
 	call print_border2
 	
-	mov dh, yinput
-    mov dl, xinput
+	mov dh, 12
+    mov dl, 33
     xor bh, bh 
     mov ah, 02h
     int 10h
@@ -605,13 +1265,46 @@
 	ja re_enter
 	
 	call word_table
-	call match_word
+	call init_temp
 	
-	;play again?
-	;mov ah, 09h
-	;lea dx, prompt12
-	;int 21h
-	jmp endwhile
+	start_of_game:
+	call clrscrn
+	call print_border
+	call print_border2
+	call display_error
+	
+	input:
+	call game_status
+	cmp winner, 1
+	jne check_gameover
+	call win_status
+	jmp win_question
+	check_gameover:
+	cmp lives, 0
+	jne game_continue
+	call game_over
+	jmp lose_question
+	game_continue:
+	call display_temp
+	call user_input
+	call check_input
+	jmp input
+	
+	
+	win_question:
+	cmp play, '1'
+	je start
+	call high_score
+	
+	lose_question:
+	cmp play, 1
+	jne end_game
+	mov level, 1
+	mov score, 0
+	jmp start
+	
+	end_game:
+	call high_score
 	
 	re_enter:
 	call clrscrn
