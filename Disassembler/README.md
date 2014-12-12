@@ -21,7 +21,7 @@ That's it!
 Extra notes:
 
 - This project might not successfully accomplish everything under the professor's test cases so to make up for this possibility, we included a set of our own test cases (Disassembler/test/) This may serve as other reference points as to how our project handles the case of using certain functions in assembly and/or in java.
-- 
+
 - There is only a single file for testing for each method (assembly.asm for asm->java and main.java for java->asm). We already included different functionalities in each sich as printing, handling if else blocks, and handling different loops.
 
 
