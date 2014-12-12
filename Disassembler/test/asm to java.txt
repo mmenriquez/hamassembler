@@ -1,0 +1,29 @@
+Assembly to Java:
+
+1. Names of Labels:
+-> if_block - for the if statement
+-> endiflabe - for the end if statement
+-> elselabe - for the else statement
+-> endelselabe - for the end else statement
+-> looplabe - start of the loop
+-> endlooplabe - end of loop
+*labels can have numbers after because the program can handle multiple if else and loop statements
+(e.g. if_block2 and endiflabe2 of the second if-else statement in the code)
+
+2. Names of Registers:
+-> al - used in if else statements (moving the variables to al register when comparing)
+-> bl - used in loop statements (moving the variables to bl register when comparing)
+
+3. Declaration of variables
+-> All variables declared in assembly are assumed have the 'db' size
+
+4. If else
+-> Printing of outputs and incrementing/decrementing the variables can be performed inside the if and else statements
+
+5. Loop
+-> The loop in disassembly is converted to the do-while loop in java
+
+6. Miscellaneous
+-> Printing of outputs, if else statements and loop statements are not limited
+-> Printing of outputs, if else statements and loop statements can be placed anywhere in the code
+
