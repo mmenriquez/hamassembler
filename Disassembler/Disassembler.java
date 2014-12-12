@@ -17,8 +17,10 @@ public class Disassembler {
 	
 	static BufferedReader inputStream = null;
 	static PrintWriter outputStream = null;
-	static String []numbers = {" "," "," "," "," "," "," "," "," "," ",};
+	static String []numbers = {" "," "," "," "," "," "," "," "," "," "};
 	static int numIndex = 0;
+	static int []numbersVal = {0,0,0,0,0,0,0,0,0,0};
+	static int numValIndex = 0;
 	
 	static String var1 = "";
 	static String var2 = "";
@@ -27,20 +29,60 @@ public class Disassembler {
 	static int loop = 0;
 	static String loopstr = "";
 	
+	static String baseVar = "string";
+	static int stringCnt = 0;
+	static int stringEnc = 0;
+	
+	static int countComma(String str) {
+		int numComma = 0;
+		for(int i = 0;i < str.length();i++) {
+			if(str.charAt(i) == ',') {
+				numComma++;
+			}
+		}
+		return numComma;
+	}
+	
 	static void sysoutConverter(PrintWriter outputStream, String printStr) {
-		if(printStr.contains("\"")||printStr.contains("\'")){
+		if(printStr.contains("\"")){
+			outputStream.println("lea dx," +baseVar.concat(Integer.toString(stringEnc)));
+			outputStream.println("mov ah, 09h");
+			outputStream.println("int 21h");
+			outputStream.println("");
+			stringEnc++;
+		}else if(printStr.contains("\'")){
 			for(int i = 1;i < printStr.length()-1;i++) {
 				printChar(outputStream, printStr.charAt(i));
 			}
 		}else{ 
 			for(int i = 0; i < numbers.length; i++){//catch if value of the variable is a number
 				if(numbers[i].equals(printStr)){
-					outputStream.println("add " +printStr+", 48");
-					outputStream.println("mov dl," +printStr);
-					outputStream.println("mov ah, 02h");
-					outputStream.println("int 21h");
-					outputStream.println("sub " +printStr+", 48");
-					outputStream.println("");
+					//if(numbersVal[i] > 10){
+						//outputStream.println("xor ax, ax");
+						//outputStream.println("mov ax, "+printStr);
+						//outputStream.println("mov bl, 10");
+						//outputStream.println("div bl");
+						
+						//outputStream.println("mov ones, ah");
+						
+						//outputStream.println("mov dl, al");
+						//outputStream.println("add dl, 48");
+						//outputStream.println("mov ah, 02h");
+						//outputStream.println("int 21h");
+						
+						//outputStream.println("mov dl, ones");
+						//outputStream.println("add dl, 48");
+						//outputStream.println("mov ah, 02h");
+						//outputStream.println("int 21h");
+						
+					//}else{
+						outputStream.println("add " +printStr+", 48");
+						outputStream.println("mov dl," +printStr);
+						outputStream.println("mov ah, 02h");
+						outputStream.println("int 21h");
+						outputStream.println("sub " +printStr+", 48");
+						outputStream.println("");
+					//}
 					return;
 				}
 			}
@@ -64,17 +106,11 @@ public class Disassembler {
 	static void variableConverter(PrintWriter outputStream, String variable, String type){
 		if(variable.contains("\"")) {
 			variable += ",\"$\"";
+			variable = variable.replace("\\n", " ");
 		}else if(variable.contains("\'")){
 			variable += ",\'$\'";
-		}else if((variable.contains("0")||variable.contains("1")||variable.contains("2")||variable.contains("3")||variable.contains("4")||variable.contains("5")||variable.contains("6")||variable.contains("7")||variable.contains("8")||variable.contains("9"))&&(type.equals("int")||type.equals("double")||type.equals("float"))){
-			String varStr = variable;
-			StringBuilder sb = new StringBuilder(varStr);
-			sb.insert(0, "str");
-			varStr = sb.toString();
-			varStr = changeVar(varStr);
-			varStr = varStr.replace("=","db");
-			outputStream.println("	" + varStr);
 		}
+		
 		String var = variable.replace("=", "db");
 		outputStream.println("	" + var);
 	}
@@ -98,7 +134,7 @@ public class Disassembler {
 		outputStream.println("");
 	}
 
-	static String getValue(String variable) { //gets the value in a variable. eg: number = 5 will return 5 
+	static String getValue(String variable) {  
 		int start = variable.indexOf('=') + 2;
 		int end = variable.length()-1;
 		if(start == end) {
@@ -119,6 +155,16 @@ public class Disassembler {
 			outputStream.println("mov al,"+foperator);
 			outputStream.println("mov cl,"+soperator);
 			outputStream.println("sub al,cl");
+			outputStream.println("mov "+result+",al");
+		}else if(operation.equals("*")){
+			outputStream.println("mov al,"+foperator);
+			outputStream.println("mov bl,"+soperator);
+			outputStream.println("mul bl");
+			outputStream.println("mov "+result+",al");
+		}else if(operation.equals("/")){
+			outputStream.println("mov al,"+foperator);
+			outputStream.println("mov bl,"+soperator);
+			outputStream.println("div bl");
 			outputStream.println("mov "+result+",al");
 		}
 	}
@@ -464,6 +510,102 @@ public class Disassembler {
 		}
 	}
 	
+	public static boolean checkOperation(String variable){
+		if(variable.contains("+")||variable.contains("-")||variable.contains("*")||variable.contains("/")){
+			return true;
+		}else
+			return false;
+	}
+	
+	public static String performOperation(String statement){
+		if(statement.contains("+")){
+			String val1 = statement.substring(statement.indexOf("=")+2, statement.indexOf("+")-1);
+			String val2 = statement.substring(statement.indexOf("+")+2);
+			int num1 = 0;
+			int num2 = 0;
+			
+			for(int i = 0; i < numbers.length; i++){
+				if(numbers[i].equals(val1)){
+					num1 = numbersVal[i];
+					for(int j = 0; j < numbers.length; j++){
+						if(numbers[j].equals(val2)){
+							num2 = numbersVal[j];
+						}
+					}
+				}
+			}
+			int newValue = num1 + num2;
+			String newVal = Integer.toString(newValue);
+			
+			statement = statement.substring(0, statement.indexOf("=")+1);
+			statement = statement.concat(" "+Integer.toString(newValue));
+		}else if(statement.contains("-")){
+			String val1 = statement.substring(statement.indexOf("=")+2, statement.indexOf("-")-1);
+			String val2 = statement.substring(statement.indexOf("-")+2);
+			int num1 = 0;
+			int num2 = 0;
+			
+			for(int i = 0; i < numbers.length; i++){
+				if(numbers[i].equals(val1)){
+					num1 = numbersVal[i];
+					for(int j = 0; j < numbers.length; j++){
+						if(numbers[j].equals(val2)){
+							num2 = numbersVal[j];
+						}
+					}
+				}
+			}
+			int newValue = num1 - num2;
+			String newVal = Integer.toString(newValue);
+			
+			statement = statement.substring(0, statement.indexOf("=")+1);
+			statement = statement.concat(" "+Integer.toString(newValue));
+		}else if(statement.contains("*")){
+			String val1 = statement.substring(statement.indexOf("=")+2, statement.indexOf("*")-1);
+			String val2 = statement.substring(statement.indexOf("*")+2);
+			int num1 = 0;
+			int num2 = 0;
+			
+			for(int i = 0; i < numbers.length; i++){
+				if(numbers[i].equals(val1)){
+					num1 = numbersVal[i];
+					for(int j = 0; j < numbers.length; j++){
+						if(numbers[j].equals(val2)){
+							num2 = numbersVal[j];
+						}
+					}
+				}
+			}
+			int newValue = num1 * num2;
+			String newVal = Integer.toString(newValue);
+			
+			statement = statement.substring(0, statement.indexOf("=")+1);
+			statement = statement.concat(" "+Integer.toString(newValue));
+		}else if(statement.contains("/")){
+			String val1 = statement.substring(statement.indexOf("=")+2, statement.indexOf("/")-1);
+			String val2 = statement.substring(statement.indexOf("/")+2);
+			int num1 = 0;
+			int num2 = 0;
+			
+			for(int i = 0; i < numbers.length; i++){
+				if(numbers[i].equals(val1)){
+					num1 = numbersVal[i];
+					for(int j = 0; j < numbers.length; j++){
+						if(numbers[j].equals(val2)){
+							num2 = numbersVal[j];
+						}
+					}
+				}
+			}
+			int newValue = num1 / num2;
+			String newVal = Integer.toString(newValue);
+			
+			statement = statement.substring(0, statement.indexOf("=")+1);
+			statement = statement.concat(" "+Integer.toString(newValue));
+		}
+		System.out.println(statement);
+		return statement;
+	}
 	
 	public static void main(String[] args) throws IOException {
 		BufferedReader inputStream = null;
@@ -515,15 +657,77 @@ public class Disassembler {
 							
 							// DECLARATION OF VARIABLES
 							while((line = inputStream.readLine()) != null){
-								if(line.contains("int ")) {
-									int startOfVariable = line.indexOf("int") + 4;
-									int endOfVar = line.indexOf('=')-1;
-									int endOfVariable = line.indexOf(';');
-									variable = line.substring(startOfVariable, endOfVariable);
-									variableConverter(outputStream, variable, "int");
-									String var = line.substring(startOfVariable,endOfVar);
-									numbers[numIndex] = var;
-									numIndex++;
+								if(line.contains("System.out.println(" + "\"")){
+									String varName = baseVar.concat(Integer.toString(stringCnt));
+									stringCnt++;
+									String content = varName + " = " +line.substring(line.indexOf("(")+1, line.indexOf(";")-1);
+									variableConverter(outputStream, content, "String");
+								}								
+								else if(line.contains("int ")) {
+									if(line.contains(",")){
+										String trimLine = line;
+										trimLine = trimLine.substring(trimLine.indexOf("int ")+4);
+										StringTokenizer tokenizer = new StringTokenizer(trimLine, ",");
+										while(tokenizer.hasMoreTokens()){
+											String token = tokenizer.nextToken();
+											token = token.trim();
+											if(token.contains(";")){
+												token = token.substring(0, token.indexOf(';'));
+												
+												if(checkOperation(token)){
+													token = performOperation(token);
+												}
+												
+												String var = token.substring(0,token.indexOf('=')-1);
+												numbers[numIndex] = var;
+												numIndex++;
+		
+												String varVal = token.substring(token.indexOf('=')+2);
+												int varValue = Integer.parseInt(varVal);
+												numbersVal[numValIndex] = varValue;
+												numValIndex++;
+												
+												variableConverter(outputStream, token, "int");
+											}else{
+												if(checkOperation(token)){
+													token = performOperation(token);
+												}
+												
+												String var = token.substring(0,token.indexOf('=')-1);
+												numbers[numIndex] = var;
+												numIndex++;
+												
+												String varVal = token.substring(token.indexOf('=')+2);
+												int varValue = Integer.parseInt(varVal);
+												numbersVal[numValIndex] = varValue;
+												numValIndex++;
+												
+												variableConverter(outputStream, token, "int");
+											}
+										}
+									}else{
+										int startOfVariable = line.indexOf("int") + 4;
+										int endOfVar = line.indexOf('=')-1;
+										int endOfVariable = line.indexOf(';');
+										variable = line.substring(startOfVariable, endOfVariable);
+										if(checkOperation(variable)){
+											variable = performOperation(variable);
+										}
+										
+										variableConverter(outputStream, variable, "int");
+										System.out.println("variable is "+variable);
+										String var = variable.substring(0, variable.indexOf("=")-1);
+										System.out.println("ping "+var);
+										numbers[numIndex] = var;
+										numIndex++;
+										
+										
+										String varVal = variable.substring(variable.indexOf("=")+2);
+										System.out.println("varVal is"+varVal);
+										int varValue = Integer.parseInt(varVal);
+										numbersVal[numValIndex] = varValue;
+										numValIndex++;
+									}
 								}
 								if(line.contains("double ")) {
 									int startOfVariable = line.indexOf("double") + 7;
@@ -564,7 +768,7 @@ public class Disassembler {
 									variableConverter(outputStream, variable, "boolean");
 								}
 							}inputStream.close();
-							
+							outputStream.println("	ones db ?");
 							outputStream.println(".stack 100h");
 							outputStream.println(".code");
 							outputStream.println("");
@@ -587,6 +791,116 @@ public class Disassembler {
 									print(outputStream, "0ah");
 								}
 								//IF-ELSE
+								else if(line.contains("else if")) {
+									System.out.println("else if");
+									ieMode = 0;
+									String sysVar = "";
+									//sysMode = 0;
+									int start = line.indexOf('(');
+									int end = line.indexOf(')');
+									String condition = line.substring(start+1, end);
+									//doIf(outputStream, condition);
+									String comparator = getComparator(condition);
+									String firstTerm = getFirstTerm(condition);
+									String secondTerm = getLastTerm(condition);
+									String temp = "";
+									
+									String result = "";
+									String operation = "";
+									String foperator = "";
+									String soperator = "";
+									
+									if(comparator.equals("="))
+										temp = "je";
+									else if(comparator.equals(">")) 
+										temp = "jg";
+									else if(comparator.equals("<")) 
+										temp = "jl";
+									else if(comparator.equals("<=")) 
+										temp = "jle";
+									else if(comparator.equals(">=")) 
+										temp = "jge";
+									else if(comparator.equals("!="))
+										temp = "jne";
+									outputStream.println("cmp "+ firstTerm + "," + secondTerm);
+									outputStream.println(temp + " elseif_block");
+									outputStream.println("jmp endelseif_block");
+									outputStream.println("elseif_block:");
+									while((line=inputStream.readLine())!=null){
+										if(line.contains("System.out.println")){
+											sysVar = line.substring(line.indexOf('(')+1, line.indexOf(')'));
+											sysoutConverter(outputStream, sysVar);
+											print(outputStream, "0ah");
+										}else if((line.contains("++")||line.contains("--"))&& !line.contains("for")){
+											String lhs = "";
+											for(int i = 0; i < numbers.length; i++){
+												if(line.contains(numbers[i])){
+													lhs = numbers[i];
+													break;
+												}
+											}
+											if(line.contains("++")){
+												result = line.substring(line.indexOf(lhs), (line.indexOf("++")));
+												operation = "+";
+												foperator = line.substring(line.indexOf(lhs), (line.indexOf("++")));
+												soperator = "1";
+												arithmeticHandler(outputStream, result, operation, foperator, soperator);
+											}else if(line.contains("--")){
+												result = line.substring(line.indexOf(lhs), (line.indexOf("--")));
+												operation = "-";
+												foperator = line.substring(line.indexOf(lhs), (line.indexOf("--")));
+												soperator = "1";
+												arithmeticHandler(outputStream, result, operation, foperator, soperator);
+											}
+										}else if(line.contains("+=")||line.contains("-=")){
+											String lhs = "";
+											for(int i = 0; i < numbers.length; i++){
+												if(line.contains(numbers[i])){
+													lhs = numbers[i];
+													break;
+												}
+											}
+											if(line.contains("+=")){
+												result = line.substring(line.indexOf(lhs), (line.indexOf("+=")));
+												operation = "+";
+												foperator = line.substring(line.indexOf(lhs), (line.indexOf("+=")));
+												soperator = line.substring((line.indexOf("=")+1), line.indexOf(";"));
+												arithmeticHandler(outputStream, result, operation, foperator, soperator);
+											}else if(line.contains("--")){
+												result = line.substring(line.indexOf(lhs), (line.indexOf("-=")));
+												operation = "-";
+												foperator = line.substring(line.indexOf(lhs), (line.indexOf("-=")));
+												soperator = line.substring((line.indexOf("=")+1), line.indexOf(";"));
+												arithmeticHandler(outputStream, result, operation, foperator, soperator);
+											}
+										}else if((line.contains("+")||line.contains("-"))&& !line.contains("for")){
+											String lhs = "";
+											for(int i = 0; i < numbers.length; i++){
+												if(line.contains(numbers[i])&&(line.indexOf(numbers[i])<line.indexOf("="))){
+													lhs = numbers[i];
+													break;
+												}
+											}
+											result = line.substring(line.indexOf(lhs), (line.indexOf("=")-1));
+											if(line.contains("+")){
+												operation = "+";
+												foperator = line.substring((line.indexOf("=")+2), (line.indexOf("+")-1));
+												soperator = line.substring((line.indexOf("+")+2), (line.indexOf(";")));
+												arithmeticHandler(outputStream, result, operation, foperator, soperator);
+											}else if(line.contains("-")){
+												operation = "-";
+												foperator = line.substring((line.indexOf("=")+2), (line.indexOf("-")-1));
+												soperator = line.substring((line.indexOf("-")+2), (line.indexOf(";")));
+												arithmeticHandler(outputStream, result, operation, foperator, soperator);
+											}
+										}
+										else if(line.contains("}")){
+											outputStream.println("endelseif_block:");
+											break;
+										}
+									}
+									outputStream.println("jmp exit");
+								}
 								else if(line.contains("if")) {
 									System.out.println("if");
 									ieMode = 0;
@@ -620,7 +934,7 @@ public class Disassembler {
 										temp = "jne";
 									outputStream.println("cmp "+ firstTerm + "," + secondTerm);
 									outputStream.println(temp + " if_block");
-									outputStream.println("jmp else_block");
+									outputStream.println("jmp endif_block");
 									outputStream.println("if_block:");
 									while((line=inputStream.readLine())!=null){
 										if(line.contains("System.out.println")){
@@ -690,8 +1004,10 @@ public class Disassembler {
 												arithmeticHandler(outputStream, result, operation, foperator, soperator);
 											}
 										}
-										else if(line.contains("}"))
+										else if(line.contains("}")){
+											outputStream.println("endif_block:");
 											break;
+										}
 									}
 									outputStream.println("jmp exit");
 								}
@@ -907,6 +1223,7 @@ public class Disassembler {
 									if(line.contains("<")){
 										if(line.charAt(line.indexOf("<")+1) == '='){
 											boolExp = "<=";
+											constant = line.charAt(line.indexOf('<')+3);
 											constant = line.charAt(line.indexOf('<')+3);
 										}else{
 											boolExp = "<";
@@ -1144,7 +1461,9 @@ public class Disassembler {
 						outputStream.println("\t\npublic static void main(String[] args) {");
 						while((line=inputStream.readLine()) != null) {
 							//DECLARATION OF VARIABLES
-							if(line.contains("db")) {
+							int numComma = countComma(line);
+							if(numComma > 1)
+							if(line.contains("db") && numComma <= 1) {
 								if(line.contains("$")) { //String
 									line = removeChr(line, '\'');
 									line = removeChr(line, ',');
